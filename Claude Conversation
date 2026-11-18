@@ -1,0 +1,309 @@
+PDF
+Final Project.py
+289 lines
+PY
+
+Based on the following, implement drafter into my current code, building a website based on the sketched schematic in the pdf, and fix any issues that you are able to find.
+
+Let me check whether Drafter is available here so I can test against its real API.
+
+Drafter isn’t installed in my sandbox, so I’ll write the page code to the standard Drafter API and test all the chemistry logic separately with a stub.
+
+I rebuilt Final_Project.py as a Drafter site that follows your sketch. I couldn’t install Drafter here, so I haven’t run the pages themselves. I did test all the chemistry logic with Drafter stubbed out, and it gave correct results. Run it once on your machine and check the pages.
+
+Pages and routes
+
+Home (index): buttons and descriptions for each tool, matching your sketch, plus an Instructions button.
+Element Library (element_library): a table of all 118 elements with molar mass and atomic number.
+Stoichiometry Calculator (stoichiometry): four boxes for reactant + reactant and product + product, and a Calculate button. The balanced equation appears on the page.
+Moles/Grams Converter (converter_menu): leads to moles_to_grams and grams_to_moles. Each has a formula box, an amount box, a “Show the work” checkbox and a Convert button.
+Enthalpy Calculator (enthalpy_calculator): a coefficient and ΔH box for each of two reactants and two products, with ΔH total shown on the page.
+Results (results): a “Tool used / Result” table of everything calculated this session.
+Instructions (instructions): a short how-to page.
+
+That is 9 routes, 7 pages, 3 or more text inputs, 1 checkbox, and a loop over state.elements in molar_mass.
+
+State and dataclasses
+
+State has elements: list[Element], history: list[HistoryEntry], result: str and show_steps: bool.
+The second dataclass Element holds symbol, molar_mass and atomic_number. A third, HistoryEntry(tool, result), feeds the Results page.
+Your design doc lists name, moles and grams fields. Update the doc to match this code.
+
+Bugs I fixed
+
+Grams to moles printed “grams” instead of “moles”.
+The enthalpy formula added everything together. It is now ΔH = Σ products − Σ reactants.
+The number check only rejected letters, so inputs like 1.2.3 or - crashed it. It now uses try/float, and negatives are rejected with an error message.
+The loop variable element shadowed your element class.
+The balancer was a 20⁴ brute-force search. It couldn’t handle one-compound sides or coefficients above 20, and it printed 1H2. It now solves the equation exactly and prints 2H2 + O2 -> 2H2O. Parentheses such as Ca(OH)2 work, and bad formulas get a clear error.
+The converters now accept compounds such as H2O, not just single elements.
+I removed the repeated float() conversions and the unused ascii_letters import.
+
+Things to know
+
+Drafter versions differ a little. If Table(rows) complains, check the Drafter docs for your version’s table syntax.
+Your design doc mentions a SelectBox, but your sketch doesn’t use one. I left it out; you could add one to the converter menu.
+The doc also mentions assert_equal tests, which I didn’t add. The functions balance_equation, molar_mass, parse_formula and calculate_enthalpy are separate from the page code, so they are easy to test.
+Final Project
+PY
+
+can you rewrite the code, attempting to keep as much of the original code provided by me as possible without interrupting functionality, with documentation according to the google-style docstring format
+
+I’ll keep your original functions, names and logic in place and change them only where Drafter needs it or where there was a bug. Then I’ll test them.
+
+I rewrote Final_Project.py to keep your original code wherever I could, and added Google-style docstrings (Args:, Returns:, Attributes:) to the module, every class and every function. I couldn’t run Drafter here, so I tested the chemistry functions and the route functions with Drafter stubbed out. They behave correctly, but the pages themselves haven’t been run.
+
+Kept from your original
+
+The element dataclass with Chemical_symbol, Molar_mass and Atomic_number.
+Your full 118-element Elements table, copied unchanged.
+moles_to_mass_converter, mass_to_moles_converter, enthalpy_calculator, parse_formula and balance_reaction. They keep your names, your error messages, the try/except structure in the enthalpy function, and the brute-force 1–20 coefficient search with four compounds.
+
+Changes Drafter required
+
+The functions take parameters instead of calling input(). The converters also take a library argument, so the loop runs over the list stored in State.
+State has library, history and result. Result(tool, result) is a new small dataclass for the Previous Results page.
+I added the @route page functions, plus small page-building helpers that aren’t routes themselves.
+
+Bugs I fixed in your code
+
+mass_to_moles_converter returned “grams” instead of “moles”.
+enthalpy_calculator added all four terms. It now subtracts the reactants from the products.
+The ascii_letters check missed inputs like 1.2.3 or -, which crashed float(). It now uses try/except ValueError, and negative amounts get an error message.
+The loop variable element shadowed your class, and a variable inside parse_formula did the same. I renamed both.
+I removed the repeated float() conversions and the unused ascii_letters import.
+Invalid formulas such as xyz used to “balance” as 1xyz + ... with all coefficients 1. The new is_valid_formula rejects unknown elements before balancing.
+
+Limitations
+
+parse_formula still doesn’t support parentheses. Ca(OH)2 would be miscounted, so is_valid_formula rejects it with an error message.
+The converters still take element symbols only, as in your original, not compounds like H2O.
+The stoichiometry and enthalpy pages need all four compounds or rows filled in, as in your original functions, so there are no one-product reactions.
+The output still prints 1H2-style coefficients, as your balance_reaction did.
+I dropped the “Show the work” checkbox from my earlier version. Your design doc lists a CheckBox, so add one back or update the doc.
+Final Project
+PY
+
+can you also make sure all code meets the following specifications, using assert_equal to test all functions? Site Functionality Requirements
+Below are the requirements that your site must fulfill. Plan ahead so that meeting these requirements is easier as you develop your project.
+
+At least 7 routes.
+At least 5 Pages, or 10 FragmentsLinks to an external site., or a combination thereof.
+The implementation of the State dataclass must have at least 4 fields.
+At least one field must be a list of class instances or a dictionary of class instances.
+This means that there must be a second dataclass.
+At least 4 state fields, including the list or dictionary of class instances, must each be meaningfully modified in at least one route; those 4 state fields cannot be constants.
+At least 3 input fields (TextBox, CheckBox, SelectBox, TextArea). They don't have to be the same type.
+At least 3 meaningful if statements.
+At least 1 loop that iterates over an attribute of the list of class instances or dictionary of class instances in a meaningful way.
+The site should have a legitimate purpose or functionality.
+No global variables (global constantsLinks to an external site. are fine).
+You must use the Drafter library.
+Any advanced coding techniques (i.e. that weren't covered in this course) used are thoroughly documented in the code.
+
+More creative and impressive designs are given flexibility on the above requirements - impress us! However, impressive websites tend to do more than the above requirements. Further, if you miss more than 2 requirements, you will get no credit for that submission. For example, missing a second dataclass means you would be missing not only that requirement, but also the list or dictionary of such dataclass instances, and the loop iterating over that list. This would mean that the submission would get a zero.
+Code Requirements
+Make sure your program and website runs; broken programs do not earn points. This means that if your program contains a syntax error or runs and doesn't deploy a website, you get zero points for this assignment, and are subject to any other penalties listed in the syllabus.
+Once you are finished with your project code, check over the following:
+
+Chosen good variable names (check last two sections of Chapter 1B1Links to an external site.)
+Unit tested your functions where possible, being valid and thoroughLinks to an external site.: each route must have at least one unit test, if possible (routes that have randomization are difficult to unit test, so they are not required to).
+If a function can't be unit tested, you must note as much in a docstring or comment.
+Broke up excessively long lines (80 characters is a good rule of thumb, but we'll be strict about not exceeding 120 characters)
+Included types in your function headers
+Included good docstrings Links to an external site.as the first line of your function's body
+Decomposed complicated functions with helper functions
+
+Your TA will be grading your code's quality based on the ideas above.
+
+Before changing anything, I checked your project against the requirements list and found three gaps:
+
+Only history and result were being modified in routes. The rubric needs 4 modified fields.
+converter_page had no type on action.
+balance_reaction was long and deeply nested.
+
+I’ll fix those, add the tests, and re-run everything.
+
+Continue
+
+That failure is a mistake in my test, not in your code. 2H2 + O2 -> 2H2O really is balanced, so is_balanced correctly returned True. I’ll swap in a genuinely unbalanced case and re-run.
+
+Final_Project.py now meets the requirements list and has assert_equal tests for every function and route. I couldn’t install Drafter here, so I ran the file against a stand-in Drafter module. All 63 assertions pass, and a deliberately broken route made the page tests fail as they should. Run it once in real Drafter before submitting, and check that no tests show as failed.
+
+Gaps I fixed
+
+State fields: only history and result were being changed by routes, and the rubric needs 4. I added calculation_count and last_tool, which save_result updates after every successful calculation. The Results page now shows both. Four fields now change: history, result, calculation_count and last_tool.
+Global variables: Elements is now ELEMENTS, a global constant. It is the only module-level variable.
+Types and long functions: converter_page’s action parameter is now typed Callable. I split balance_reaction into collect_elements, is_balanced and format_equation, and enthalpy_calculator now uses sum_enthalpy. All the original logic is still there.
+Page routes: I removed the extra page-building helpers for the stoichiometry and enthalpy pages. Those pages are now routes, and the calculate routes return them directly. Home and the converter menu clear the old result, so each tool starts fresh.
+Line length: the longest line is 83 characters, under the 120 limit.
+
+Requirement check
+
+Requirement	Status
+At least 7 routes	12
+At least 5 pages	8
+State with at least 4 fields, including a list of instances	5 fields; library and history hold instances of element and Result
+4 fields meaningfully modified	history, result, calculation_count, last_tool
+At least 3 inputs	12 TextBoxes across the site
+At least 3 meaningful if statements	many (validation, success checks, is_balanced)
+Loop over the list of instances	for chemical in library and for entry in state.history
+No global variables	only ELEMENTS, a constant
+Advanced techniques documented	Callable and Page-comparison tests are explained in the module docstring
+
+Tests
+
+Pure functions: every non-route function has tests, including error cases and edge cases (blank input, negative numbers, unknown elements, no balance found).
+Display routes: index, element_library, converter, stoichiometry, moles_to_grams, grams_to_moles, enthalpy and results are tested by comparing the whole Page.
+Calculate routes: the four calculate_* routes are tested through the state fields they change.
+Test layout: the tests live inside functions, so they create no global variables. run_all_tests() runs them just before start_server.
+converter_page: it is tested indirectly through the two converter routes.
+
+Things to check
+
+Your design doc still lists a CheckBox and SelectBox that the code doesn’t use. You have 12 TextBoxes, so the 3-input requirement is met, but update the doc’s “State” and “User Input” rows to match the code.
+Your doc says the Element dataclass has symbol, name and atomic_mass. The code keeps your original Chemical_symbol, Molar_mass and Atomic_number.
+If real Drafter’s assert_equal shows a page test failing, the cause is probably how your Drafter version compares Page objects. The test values themselves have been checked.
+Final Project
+PY
+
+can you add a select box to decide which parts of the element library the user wants to see, and a check box to round up to the nearest integer for all calculations?
+
+I’ll add both features as persistent settings, so each choice is saved in State and applies everywhere:
+
+Select box: it goes on the Element Library page and filters the table by atomic-number range.
+Check box: it goes on the Home page and rounds results up in the converters and the enthalpy calculator.
+
+Two small cleanups. I’ll drop the optional heading-level argument to stay on Drafter’s most basic Header call, and shorten a multi-line docstring summary.
+
+I added both features to Final_Project.py. As before, I tested them with a stand-in Drafter module, not real Drafter, so run the site once to check the new pages. All 85 assertions pass, up from 63.
+
+Select box on the Element Library page
+
+A dropdown lets you choose “All elements”, “1-20”, “21-54”, “55-86” or “87-118” by atomic number, and a Show button applies it.
+The choice is saved in the new State.library_section field, so the page remembers it when you come back.
+The filtering is done by filter_library, which loops over the library and keeps the elements in the chosen range. It returns the whole library if the choice isn’t a valid range.
+The new route show_library_section saves the choice.
+
+Check box for rounding up
+
+The check box and a Save Settings button are in a new Settings section on the Home page. The setting is saved in the new State.round_up field and applies to every calculation until you change it.
+The moles-to-grams, grams-to-moles and enthalpy calculations all use it, through a new helper format_number. The new route set_rounding saves the setting.
+
+Behaviours to know
+
+Rounding: “Round up” means ceiling. Fe at 2 moles gives 111.69 g, which shows as 112, and ΔH of -890.3 shows as -890, since rounding up moves toward positive. If you want normal rounding instead, change ceil to round in format_number.
+Floating-point errors: format_number rounds to 4 decimals before taking the ceiling. Without that, 111.69 g of Fe is about 2.0000000000000004 mol and would show as 3.
+Stoichiometry: it isn’t affected, because balanced coefficients are always whole numbers already.
+
+Requirements still met
+
+The site now has 14 routes.
+State has 7 fields. The ones modified by routes are history, result, calculation_count, last_tool, library_section and round_up.
+Inputs: 12 TextBoxes, 1 SelectBox and 1 CheckBox.
+There are still no global variables apart from the constants ELEMENTS and LIBRARY_SECTIONS.
+The longest line is 83 characters, every function has a docstring, and every parameter is typed.
+
+You’ll need to update your design doc’s State and User Input rows to match. Its SelectBox row can now describe the library filter, and its CheckBox row can describe rounding. The route list needs set_rounding and show_library_section as well.
+
+Final Project
+PY
+
+make the website aesthetically pleasing
+
+I’ll style the site in three ways. Page-wide CSS gives it a card layout, teal gradient buttons, styled tables and form fields. Emoji go into the headings and home-page buttons. A browser tab title and a web font are set as well. The styling can’t be run here, so I’ll make it fail-safe: if your Drafter version lacks one of the styling helpers, the site still runs, just less styled.
+
+I’ve restyled the whole site in Final_Project.py, but I couldn’t see how it looks. I don’t have Drafter here or a browser, so please run it once and look at the pages. All 88 tests pass. I also checked that all 18 styling calls fire when the helpers are present, and that the site still starts when they’re missing.
+
+What changed
+
+Page card: each page now sits in a white rounded card with a soft shadow and a teal top border, on a light mint-to-sky gradient background.
+Typography: headings are bold teal with an underline, and the page text uses the Nunito web font, falling back to Segoe UI or Arial if the font doesn’t load.
+Buttons: the main buttons are teal gradients that lift slightly when you hover. Home and Back get a light outlined style so they look like secondary actions.
+Inputs: text boxes and the dropdown have rounded borders with a teal focus ring, and the checkboxes are enlarged and teal.
+Tables: the Element Library and Results tables have a teal header row, striped rows and a hover highlight.
+Emoji: headings and the home-page buttons got small icons, for example 🧪 Stoichiometry, 🔥 Enthalpy, ⚖️ Converter and 📖 Library. The tab title is now “Chemistry Helper”.
+
+Safety net: the styling relies on Drafter helpers I couldn’t confirm exist in your version. They are set_website_title, set_website_framed, add_website_header and add_website_css. Each is run through a small try_setup function that skips it if it’s missing or takes different arguments. If something looks unstyled, the likely cause is one of those helpers or a CSS selector not matching Drafter’s page structure.
+
+Tests and requirements: the emoji heading changes are mirrored in the page tests, and try_setup has its own tests. style_website itself can’t be unit tested, since it only changes how the site looks in the browser, and its docstring says so. Longest line is 83 characters, every function has a docstring and typed parameters, and the only module-level variables are constants.
+
+Things to know
+
+I left Drafter’s debug panel visible so you can still see your test results. If you want a cleaner final look, add hide_debug_information() right before start_server.
+To change the colors, edit THEME_RULES near the top. The main teal values are 
+#0f766e, 
+#14b8a6 and 
+#ccfbf1.
+lambda and try/except NameError are new, so I added them to the module docstring as advanced techniques, as the requirements ask.
+Final Project
+PY
+PDF
+
+Based on this feedback, please edit the website to fit the new feedback
+
+The feedback points to four things:
+
+Enthalpy shouldn’t make people type ΔH values, and they want a ΔH library.
+“Coefficient” and the enthalpy page need explaining.
+The inputs were visually confusing.
+“Chemistry” should be capitalized.
+
+I’ll check the current file first, then make the changes.
+
+Continue
+
+Finishing checks on the test run and the output.
+
+All 107 tests pass. Before handing it over, I’ll confirm the styling still loads, check the new tests can actually fail, and re-confirm the capitalization fix.
+
+The two “duplicates” are H2O and C in the unit tests, not in the library itself. The library has 41 unique compounds.
+
+Presented file
+
+I’ve updated Final_Project.py to address your tester’s feedback. As before, I tested it with a stand-in Drafter module, not real Drafter, so run the site once and look at the new pages. All 107 tests pass, including a check that breaking the ΔH lookup makes them fail.
+
+Feedback and what I did about it
+
+Feedback	Change
+“Enthalpy should not require the user to input delta h values” and “a delta h library should be added”	There is a new 📚 ΔH Library page with 41 common compounds (e.g. H2O, CO2, CH4, NH3, glucose). The enthalpy calculator now has a dropdown for each reactant and product, and its ΔH is filled in automatically.
+Compound not in the library	A “Custom ΔH value” choice in the dropdown lets users type their own value, and “(none)” skips an unused slot.
+“Enthalpy calculator needs more instructions” and “Coefficient needs to be explained”	The enthalpy page now has a 4-step how-to at the top, and each input has a plain-language label such as “Coefficient (the number in front of it in the balanced equation)”.
+“Input values were a little confusing visually”	Each reactant and product is now its own labelled group: dropdown, coefficient and custom ΔH. Before, one label covered two unlabelled boxes.
+“Chemistry is not capitalized in the title”	The home page heading now reads “Welcome to the Chemistry Helper website!”.
+“Convenience” was listed as missing	The dropdowns replace typing, and a new ❓ Instructions page explains coefficient, ΔH, exothermic/endothermic, ΔH of formation, molar mass and rounding.
+
+Code and requirements
+
+The site now has 16 routes, and State has 8 fields. The new compounds field holds a list of Compound instances, a third dataclass. The elements library loop is unchanged, and the new library page loops over the compounds too.
+Your original enthalpy_calculator function is untouched. A new helper, read_slot, turns each dropdown choice into the text it expects.
+Every new function and route has a docstring, typed parameters and tests. The longest line is 90 characters, under the 120 limit.
+
+Things to know
+
+The enthalpy tab, library and instructions all follow the same theme styling as before.
+The ΔH values are standard enthalpies of formation at 25 °C, rounded. Textbooks differ slightly, and the library page says so, so check them against your course’s table if your instructor expects specific numbers.
+Dropdowns need no typing, so there are fewer ways to make a mistake. Typed formulas still have to match the library exactly, for example H2O(g) for water vapor.
+Your tester said he’d prefer doing the work by hand. That’s a usefulness problem rather than a bug, but the dropdowns make the tool faster than hand work for the enthalpy case, which was the main complaint.
+
+For your Reflect section, you could note that the tester’s two ΔH comments pointed to the same fix, and that the observation about missing instructions led to the new Instructions page. You’ll also need to update the design doc: the route list now includes enthalpy_library and instructions, and the State fields now include compounds.
+
+Final Project
+PY
+
+it returns an error
+
+The traceback shows the cause. My unit test for slot_inputs built a SelectBox whose default, "(none)", wasn’t in the options list I gave it (["a", "b"]). Real Drafter rejects that, but my stand-in module never checked it, so I missed it. The site’s own pages are fine, because the real dropdown options always include (none). I’ll fix the test and make my stub enforce the same rule so a similar error can’t slip through again.
+
+That error came from one of my unit tests, not from the website, and I’ve fixed it in Final_Project.py.
+
+The cause: the traceback pointed to slot_inputs, called from test_enthalpy_library. The test passed ["a", "b"] as the dropdown options, but slot_inputs always sets the default to "(none)". Real Drafter requires a SelectBox default to be in its options list. The real enthalpy page was never affected, because compound_options always puts "(none)" first.
+
+The fix: the test now uses [NO_COMPOUND, "a", "b"], both in the call and in the expected value.
+
+Why I missed it: my stand-in Drafter didn’t enforce that rule. It now does, and I confirmed it reproduces your exact error when the old test is put back. With the fix, all 107 assertions pass under the stricter stand-in. The other SelectBox calls (the library range picker and the real enthalpy dropdowns) all use defaults that are in their option lists.
+
+If another error shows up: please send the next traceback. Real Drafter is stricter than my stand-in in places I can’t see, and your screenshot is the only way I can check against it. If other tests fail the same way, they’d be test-code problems like this one rather than problems with the site.
+
+Final Project
+PY
